@@ -683,75 +683,168 @@
         game.player.maxMana += itemToBuy.manaValue;
         game.player.mana += itemToBuy.manaValue;
         speak(`You bought and equipped ${itemToBuy.name} for ${itemToBuy.price} gold! Max mana increased by ${itemToBuy.manaValue}!`);
-    } else if (itemToBuy.type === 'weapon' || itemToBuy.type === 'armor' || itemToBuy.type === 'helmet' || itemToBuy.type === 'gloves' || itemToBuy.type === 'boots') {
-        // ADD THE ITEM AS AN EQUIPMENT OBJECT, NOT JUST THE NAME
-        // This ensures it can be found by the equip function
-        const equipmentItem = {
-            name: itemToBuy.name,
-            type: itemToBuy.type,
-            attack: itemToBuy.attack,
-            defense: itemToBuy.defense,
-            mana: itemToBuy.mana,
-            health: itemToBuy.health,
-            class: itemToBuy.class,
-            description: itemToBuy.description,
-            effect: itemToBuy.effect
-        };
-        
-        // Add to the appropriate equipment array so it can be found
-        if (itemToBuy.type === 'weapon') {
-            equipment.weapons.push(equipmentItem);
-        } else if (itemToBuy.type === 'armor') {
-            equipment.armor.push(equipmentItem);
-        } else if (itemToBuy.type === 'helmet') {
-            equipment.helmets.push(equipmentItem);
-        } else if (itemToBuy.type === 'gloves') {
-            equipment.gloves.push(equipmentItem);
-        } else if (itemToBuy.type === 'boots') {
-            equipment.boots.push(equipmentItem);
-        }
-        
-        game.player.inventory.push(itemToBuy.name);
-        speak(`You bought ${itemToBuy.name} for ${itemToBuy.price} gold. Say "equip ${itemToBuy.name}" to wear it. Remaining gold: ${game.player.gold}.`);
     } else {
         game.player.inventory.push(itemToBuy.name);
         speak(`You bought ${itemToBuy.name} for ${itemToBuy.price} gold. Remaining gold: ${game.player.gold}.`);
     }
+}Now the real fix - update the equipWeaponOrArmor function (around line 674) to also check merchantItems:function equipWeaponOrArmor(command) {
+    let itemToEquip = null;
+    let itemType = null;
+    
+    for (let item of game.player.inventory) {
+        if (command.includes(item.toLowerCase())) {
+            // Check regular equipment arrays
+            if (equipment.weapons.some(w => w.name === item)) {
+                itemToEquip = item;
+                itemType = 'weapon';
+                break;
+            }
+            else if (equipment.armor.some(a => a.name === item)) {
+                itemToEquip = item;
+                itemType = 'armor';
+                break;
+            }
+            else if (equipment.shields && equipment.shields.some(s => s.name === item)) {
+                itemToEquip = item;
+                itemType = 'shield';
+                break;
+            }
+            else if (equipment.helmets && equipment.helmets.some(h => h.name === item)) {
+                itemToEquip = item;
+                itemType = 'helmet';
+                break;
+            }
+            else if (equipment.gloves && equipment.gloves.some(g => g.name === item)) {
+                itemToEquip = item;
+                itemType = 'gloves';
+                break;
+            }
+            else if (equipment.boots && equipment.boots.some(b => b.name === item)) {
+                itemToEquip = item;
+                itemType = 'boots';
+                break;
+            }
+            // NEW: Also check merchant items
+            else if (merchantItems.some(m => m.name === item && m.type === 'weapon')) {
+                itemToEquip = item;
+                itemType = 'weapon';
+                break;
+            }
+            else if (merchantItems.some(m => m.name === item && m.type === 'armor')) {
+                itemToEquip = item;
+                itemType = 'armor';
+                break;
+            }
+            else if (merchantItems.some(m => m.name === item && m.type === 'helmet')) {
+                itemToEquip = item;
+                itemType = 'helmet';
+                break;
+            }
+            else if (merchantItems.some(m => m.name === item && m.type === 'gloves')) {
+                itemToEquip = item;
+                itemType = 'gloves';
+                break;
+            }
+            else if (merchantItems.some(m => m.name === item && m.type === 'boots')) {
+                itemToEquip = item;
+                itemType = 'boots';
+                break;
+            }
         }
-
-            if (!itemToBuy) {
-                speak('Item not recognized or not for your class. Say "what do you have" to see available items.');
-                return;
-            }
-
-            if (game.player.gold < itemToBuy.price) {
-                speak(`Not enough gold. You need ${itemToBuy.price} gold but only have ${game.player.gold}.`);
-                return;
-            }
-
-            game.player.gold -= itemToBuy.price;
-            
-            if (itemToBuy.type === 'special_item') {
-                game.player.specialItems.push(itemToBuy.name);
-                speak(`You bought ${itemToBuy.name} for ${itemToBuy.price} gold! ${itemToBuy.effect}. This is now permanently active!`);
-            } else if (itemToBuy.type === 'special_ring') {
-                game.player.equippedRings.push(itemToBuy.name);
-                speak(`You bought and equipped ${itemToBuy.name} for ${itemToBuy.price} gold! ${itemToBuy.effect}.`);
-            } else if (itemToBuy.type === 'special_amulet') {
-                if (game.player.equippedAmulet) {
-                    game.player.inventory.push(game.player.equippedAmulet);
-                }
-                game.player.equippedAmulet = itemToBuy.name;
-                game.player.maxMana += itemToBuy.manaValue;
-                game.player.mana += itemToBuy.manaValue;
-                speak(`You bought and equipped ${itemToBuy.name} for ${itemToBuy.price} gold! Max mana increased by ${itemToBuy.manaValue}!`);
-            } else {
-                game.player.inventory.push(itemToBuy.name);
-                speak(`You bought ${itemToBuy.name} for ${itemToBuy.price} gold. Remaining gold: ${game.player.gold}.`);
-            }
+    }
+    
+    if (!itemToEquip) {
+        speak('You do not have that item. Check inventory.');
+        return;
+    }
+    
+    const itemIndex = game.player.inventory.indexOf(itemToEquip);
+    game.player.inventory.splice(itemIndex, 1);
+    
+    if (itemType === 'weapon' && game.player.weapon) {
+        game.player.inventory.push(game.player.weapon);
+    } else if (itemType === 'armor' && game.player.armor) {
+        game.player.inventory.push(game.player.armor);
+    } else if (itemType === 'shield' && game.player.shield) {
+        game.player.inventory.push(game.player.shield);
+    } else if (itemType === 'helmet' && game.player.helmet) {
+        game.player.inventory.push(game.player.helmet);
+    } else if (itemType === 'gloves' && game.player.gloves) {
+        game.player.inventory.push(game.player.gloves);
+    } else if (itemType === 'boots' && game.player.boots) {
+        game.player.inventory.push(game.player.boots);
+    }
+    
+    if (itemType === 'weapon') {
+        game.player.weapon = itemToEquip;
+        // Check both equipment arrays and merchant items
+        let weaponData = equipment.weapons.find(w => w.name === itemToEquip) || 
+                        merchantItems.find(m => m.name === itemToEquip && m.type === 'weapon');
+        game.player.baseAttack = weaponData.attack;
+        
+        let equipMessage = `You equip ${itemToEquip}. Attack is now ${weaponData.attack}.`;
+        
+        if (weaponData.mana && game.player.class === 'mage') {
+            game.player.maxMana += weaponData.mana;
+            game.player.mana += weaponData.mana;
+            equipMessage += ` Max mana increased by ${weaponData.mana}!`;
         }
-
-        function sellToMerchant(command) {
+        
+        speak(equipMessage);
+    } else if (itemType === 'armor') {
+        game.player.armor = itemToEquip;
+        recalculateDefense();
+        speak(`You equip ${itemToEquip}. Defense is now ${game.player.defense}.`);
+    } else if (itemType === 'shield') {
+        game.player.shield = itemToEquip;
+        recalculateDefense();
+        speak(`You equip ${itemToEquip}. Defense is now ${game.player.defense}.`);
+    } else if (itemType === 'helmet') {
+        game.player.helmet = itemToEquip;
+        let helmetData = equipment.helmets.find(h => h.name === itemToEquip) || 
+                        merchantItems.find(m => m.name === itemToEquip && m.type === 'helmet');
+        if (helmetData.defense) {
+            recalculateDefense();
+            speak(`You equip ${itemToEquip}. Defense is now ${game.player.defense}.`);
+        } else if (helmetData.mana) {
+            game.player.maxMana += helmetData.mana;
+            game.player.mana += helmetData.mana;
+            speak(`You equip ${itemToEquip}. Max mana increased by ${helmetData.mana}!`);
+        }
+    } else if (itemType === 'gloves') {
+        game.player.gloves = itemToEquip;
+        let glovesData = equipment.gloves.find(g => g.name === itemToEquip) || 
+                        merchantItems.find(m => m.name === itemToEquip && m.type === 'gloves');
+        if (glovesData.attack) {
+            speak(`You equip ${itemToEquip}. Attack damage increased by ${glovesData.attack}!`);
+        } else if (glovesData.mana) {
+            game.player.maxMana += glovesData.mana;
+            game.player.mana += glovesData.mana;
+            speak(`You equip ${itemToEquip}. Max mana increased by ${glovesData.mana}!`);
+        } else if (glovesData.health) {
+            game.player.maxHealth += glovesData.health;
+            game.player.health += glovesData.health;
+            speak(`You equip ${itemToEquip}. Max health increased by ${glovesData.health}!`);
+        }
+    } else if (itemType === 'boots') {
+        game.player.boots = itemToEquip;
+        let bootsData = equipment.boots.find(b => b.name === itemToEquip) || 
+                       merchantItems.find(m => m.name === itemToEquip && m.type === 'boots');
+        if (bootsData.defense) {
+            recalculateDefense();
+            speak(`You equip ${itemToEquip}. Defense is now ${game.player.defense}.`);
+        } else if (bootsData.mana) {
+            game.player.maxMana += bootsData.mana;
+            game.player.mana += bootsData.mana;
+            speak(`You equip ${itemToEquip}. Max mana increased by ${bootsData.mana}!`);
+        } else if (bootsData.health) {
+            game.player.maxHealth += bootsData.health;
+            game.player.health += bootsData.health;
+            speak(`You equip ${itemToEquip}. Max health increased by ${bootsData.health}!`);
+        }
+    }
+        
+          function sellToMerchant(command) {
             const sellableItems = game.player.inventory.filter(item => {
                 return equipment.weapons.some(w => w.name === item) ||
                        equipment.armor.some(a => a.name === item) ||
@@ -2862,4 +2955,5 @@
 </body>
 
 </html>
+
 

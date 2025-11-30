@@ -639,6 +639,44 @@
             game.merchantOpen = true;
             speak('A mysterious merchant greets you. Say "what do you have" to see wares, "buy" to purchase, "sell" to sell items, or "leave" to exit.');
         }
+        function listMerchantWares() {
+    const messages = ['The merchant offers:'];
+    merchantItems.forEach(item => {
+        if (item.type === 'weapon' && item.class === game.player.class) {
+            let itemDesc = `${item.name} for ${item.price} gold. Attack ${item.attack}.`;
+            if (item.description) itemDesc += ` ${item.description}.`;
+            messages.push(itemDesc);
+        } else if (item.type === 'armor' && item.class === game.player.class) {
+            let itemDesc = `${item.name} for ${item.price} gold. Defense ${item.defense}.`;
+            if (item.description) itemDesc += ` ${item.description}.`;
+            messages.push(itemDesc);
+        } else if (item.type === 'helmet' && game.dungeon.currentLevel >= 8 && (!item.class || item.class === game.player.class)) {
+            let itemDesc = `${item.name} for ${item.price} gold.`;
+            if (item.defense) itemDesc += ` Defense ${item.defense}.`;
+            if (item.mana) itemDesc += ` Mana ${item.mana}.`;
+            if (item.description) itemDesc += ` ${item.description}.`;
+            messages.push(itemDesc);
+        } else if (item.type === 'gloves' && game.dungeon.currentLevel >= 8 && (!item.class || item.class === game.player.class)) {
+            let itemDesc = `${item.name} for ${item.price} gold.`;
+            if (item.attack) itemDesc += ` Attack ${item.attack}.`;
+            if (item.mana) itemDesc += ` Mana ${item.mana}.`;
+            if (item.description) itemDesc += ` ${item.description}.`;
+            messages.push(itemDesc);
+        } else if (item.type === 'boots' && game.dungeon.currentLevel >= 8 && (!item.class || item.class === game.player.class)) {
+            let itemDesc = `${item.name} for ${item.price} gold.`;
+            if (item.defense) itemDesc += ` Defense ${item.defense}.`;
+            if (item.mana) itemDesc += ` Mana ${item.mana}.`;
+            if (item.description) itemDesc += ` ${item.description}.`;
+            messages.push(itemDesc);
+        } else if (item.type === 'potion') {
+            messages.push(`${item.name} for ${item.price} gold.`);
+        } else if (item.type === 'special_potion' || item.type === 'special_item' || item.type === 'special_ring' || item.type === 'special_amulet') {
+            messages.push(`${item.name} for ${item.price} gold. ${item.description || item.effect}.`);
+        }
+    });
+    messages.push('Say "buy" followed by the item name to purchase.');
+    speakSequence(messages);
+        }
 
         function buyFromMerchant(command) {
     let itemToBuy = null;
@@ -2956,6 +2994,7 @@
 </body>
 
 </html>
+
 
 
 

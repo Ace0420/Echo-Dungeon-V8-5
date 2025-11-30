@@ -726,10 +726,10 @@ function listMerchantWares() {
     });
     messages.push('Say "buy" followed by the item name to purchase.');
     speakSequence(messages);
-}
-        }
-        
-          function sellToMerchant(command) {
+   }
+ }
+    
+        function sellToMerchant(command) {
             const sellableItems = game.player.inventory.filter(item => {
                 return equipment.weapons.some(w => w.name === item) ||
                        equipment.armor.some(a => a.name === item) ||
@@ -2840,6 +2840,7 @@ function listMerchantWares() {
 </body>
 
 </html>
+
 
 
 

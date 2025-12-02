@@ -1646,6 +1646,7 @@
                 const allEpic = [
                     ...equipment.weapons.filter(w => w.value > 400 && w.class === playerClass),
                     ...equipment.armor.filter(a => a.value > 400 && a.class === playerClass),
+                    ...(equipment.shields && playerClass === 'warrior' ? equipment.shields.filter(s => s.value > 400) : []),
                     ...equipment.helmets.filter(h => h.minLevel >= 5 && (!h.class || h.class === playerClass)),
                     ...equipment.gloves.filter(g => g.minLevel >= 4 && (!g.class || g.class === playerClass)),
                     ...equipment.boots.filter(b => b.minLevel >= 5 && (!b.class || b.class === playerClass))
@@ -1659,6 +1660,7 @@
                 const allLegendary = [
                     ...equipment.weapons.filter(w => w.value > 200 && w.class === playerClass),
                     ...equipment.armor.filter(a => a.value > 200 && a.class === playerClass),
+                    ...(equipment.shields && playerClass === 'warrior' ? equipment.shields.filter(s => s.value > 200) : []),
                     ...equipment.helmets.filter(h => !h.class || h.class === playerClass),
                     ...equipment.gloves.filter(g => !g.class || g.class === playerClass),
                     ...equipment.boots.filter(b => !b.class || b.class === playerClass)
@@ -2862,3 +2864,4 @@
 </body>
 
 </html>
+
